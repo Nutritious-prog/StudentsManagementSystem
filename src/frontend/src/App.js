@@ -10,7 +10,7 @@ import {
 } from '@ant-design/icons';
 import {Avatar, Badge, Breadcrumb, Button, Empty, Layout, Menu, Popconfirm, Spin, Table, Tag, message, Radio} from 'antd';
 import StudentDrawerForm from "./StudentDrawerForm";
-import {successNotification} from "./Notification";
+import {errorNotification, successNotification} from "./Notification";
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -41,8 +41,16 @@ const removeStudent = (studentId, callback) => {
     console.log("Im in remove student function.")
     deleteStudent(studentId).then(() => {
         console.log("After deleting.");
-        successNotification("Student deleted", `Student with id ${studentId} was deleted successfully!`);
-            callback();
+        successNotification("Student deleted", `Student with ID  ${studentId} was deleted successfully!`);
+        callback();
+    }).catch(err => {
+        err.response.json().then(res => {
+            console.log(res);
+            errorNotification(
+                "There was an issue",
+                `${res.message} [${res.status}] [${res.error}]`
+            )
+        });
     });
 }
 
@@ -87,9 +95,9 @@ const columns = fetchStudents => [
                     okText="Yes"
                     cancelText="No"
                 >
-                    <Radio.Button value="large">Delete</Radio.Button>
+                    <Radio.Button type="button" value="large">Delete</Radio.Button>
                 </Popconfirm>
-                <Radio.Button value="large">Edit</Radio.Button>
+                <Radio.Button  type="button" value="large">Edit</Radio.Button>
             </Radio.Group>
     },
 ];
@@ -107,8 +115,15 @@ function App() {
             .then(res => res.json())
             .then(data => {
                 setStudents(data);
-                setFetching(false);
-            });
+            }).catch(err => {
+                console.log(err.response);
+                err.response.json().then(res => {
+                    console.log(res);
+                    errorNotification("Something went wrong...", `${res.message} [statusCode:${res.status}]`)
+                });
+        }).finally(() => {
+            setFetching(false);
+        });
 
     useEffect(() => {
         console.log("component is mounted");
@@ -118,7 +133,19 @@ function App() {
     const renderStudents = (students) => {
         if(fetching) return <Spin indicator = {antIcon}/>;
         if(students.length <= 0) {
-            return <Empty/>;
+            return <>
+                <Button
+                    onClick={() => setShowDrawer(!showDrawer)}
+                    type="primary" shape="round" icon={<PlusOutlined/>} size="small">
+                    Add New Student
+                </Button>
+                <StudentDrawerForm
+                    showDrawer={showDrawer}
+                    setShowDrawer={setShowDrawer}
+                    fetchStudents={fetchStudents}
+                />
+                <Empty/>
+            </>
         }
         return <>
             <StudentDrawerForm
@@ -132,7 +159,7 @@ function App() {
             bordered
             title={() =>
                 <>
-                <Button onClick={() => setShowDrawer(!showDrawer)} type="primary" shape="round" icon={<PlusOutlined />} size="large">
+                <Button type="button" onClick={() => setShowDrawer(!showDrawer)} type="primary" shape="round" icon={<PlusOutlined />} size="large">
                     Add Student
                 </Button>
                 <Badge
