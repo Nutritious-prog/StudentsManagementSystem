@@ -1,6 +1,6 @@
 ## Student Management System
 
-This project is hosted with [AWS](Springbootreactfullstack-env.eba-8udargqy.eu-north-1.elasticbeanstalk.com ).
+This project is hosted with [AWS](http://springbootreactfullstack-env.eba-8udargqy.eu-north-1.elasticbeanstalk.com/).
 
 System build in Java and React imitating logistic management system. Application uses AWS database so all records added will maintain on site.
 
